@@ -5,3 +5,12 @@ canvas.width = 200;
 const context = canvas.getContext("2d");
 const car = new Car(100, 100, 30, 50);
 car.draw(context);
+
+AnimationEffect();
+
+function AnimationEffect(){
+    requestAnimationFrame(AnimationEffect);
+    context.clearRect(0,0,canvas.width,canvas.height);
+    car.update();
+    car.draw(context);
+}
