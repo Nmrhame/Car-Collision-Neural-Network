@@ -1,5 +1,5 @@
 class Car{
-    constructor(x,y,width,height,controlType, maxSpeed=3){
+    constructor(x,y,width,height,controlType,maxSpeed=3){
         this.x=x;
         this.y=y;
         this.width=width;
@@ -10,27 +10,42 @@ class Car{
         this.maxSpeed=maxSpeed;
         this.friction=0.05;
         this.angle=0;
-        this.damagged=false;
+        this.damaged=false;
 
-        if(controlType=="KEYS"){
+        this.useBrain=controlType=="AI";
+
+        if(controlType!="DUMMY"){
             this.sensor=new Sensor(this);
+            this.brain=new NeuralNetwork(
+                [this.sensor.rayCount,6,4]
+            );
         }
         this.controls=new Controls(controlType);
     }
 
-    update(roadBorders, traffic){
+    update(roadBorders,traffic){
         if(!this.damaged){
             this.#move();
             this.polygon=this.#createPolygon();
-            this.damaged=this.#assessDamage(roadBorders, traffic);
+            this.damaged=this.#assessDamage(roadBorders,traffic);
         }
         if(this.sensor){
-            this.sensor.update(roadBorders, traffic);
+            this.sensor.update(roadBorders,traffic);
+            const offsets=this.sensor.readings.map(
+                s=>s==null?0:1-s.offset
+            );
+            const outputs=NeuralNetwork.feedForward(offsets,this.brain);
+
+            if(this.useBrain){
+                this.controls.forward=outputs[0];
+                this.controls.left=outputs[1];
+                this.controls.right=outputs[2];
+                this.controls.reverse=outputs[3];
+            }
         }
     }
 
-
-    #assessDamage(roadBorders, traffic){
+    #assessDamage(roadBorders,traffic){
         for(let i=0;i<roadBorders.length;i++){
             if(polysIntersect(this.polygon,roadBorders[i])){
                 return true;
@@ -42,11 +57,10 @@ class Car{
             }
         }
         return false;
-        return false;
     }
 
     #createPolygon(){
-        const points = [];
+        const points=[];
         const rad=Math.hypot(this.width,this.height)/2;
         const alpha=Math.atan2(this.width,this.height);
         points.push({
@@ -66,7 +80,6 @@ class Car{
             y:this.y-Math.cos(Math.PI+this.angle+alpha)*rad
         });
         return points;
-
     }
 
     #move(){
@@ -108,9 +121,9 @@ class Car{
         this.y-=Math.cos(this.angle)*this.speed;
     }
 
-    draw(ctx, color){
+    draw(ctx,color,drawSensor=false){
         if(this.damaged){
-            ctx.fillStyle='red';
+            ctx.fillStyle="gray";
         }else{
             ctx.fillStyle=color;
         }
@@ -121,7 +134,7 @@ class Car{
         }
         ctx.fill();
 
-        if(this.sensor){
+        if(this.sensor && drawSensor){
             this.sensor.draw(ctx);
         }
     }
