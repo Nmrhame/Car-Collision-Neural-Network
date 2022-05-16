@@ -12,7 +12,11 @@ AnimationEffect();
 function AnimationEffect(){
     car.update();
     canvas.height = window.innerHeight;
+
+    context.save();
+    context.translate(0, -car.y + canvas.height*.7);
     road.draw(context);
     car.draw(context);
+    context.restore();
     requestAnimationFrame(AnimationEffect);
 }
