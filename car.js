@@ -8,6 +8,7 @@ class Car{
         this.acceralation = 0.2;
         this.maxSpeed = 3;
         this.friction = 0.05;
+        this.angle = 0;
         this.control = new Control();
     }
 
@@ -18,11 +19,14 @@ class Car{
         if(this.control.reverse){
             this.speed -= this.acceralation;
         }
-        if(this.control.left){
-            this.x -= 2;
-        }
-        if(this.control.right){
-            this.x += 2;
+        if(this.speed != 0 ){
+            const flip = this.speed>0?1:-1;
+            if(this.control.left){
+            this.angle += 0.03 *flip;
+            }
+            if(this.control.right){
+            this.angle -= 0.03 *flip;
+            }
         }
         if(this.speed > this.maxSpeed){
             this.speed = this.maxSpeed;
@@ -36,17 +40,26 @@ class Car{
         if(this.speed < 0){
             this.speed += this.friction;
         }  
-        this.y -= this.speed;
+        if(Math.abs(this.speed) < this.friction){
+            this.speed = 0;
+        }
+        this.x -= Math.sin(this.angle)*this.speed;
+        this.y -= Math.cos(this.angle)*this.speed;
+        
     }
 
     draw(context){
+        context.save();
+        context.translate(this.x, this.y);
+        context.rotate(-this.angle); 
         context.beginPath();
         context.rect(
-            this.x - this.width/2, 
-            this.y - this.height/2, 
+            -this.width/2, 
+            -this.height/2, 
             this.width, 
             this.height
         );
         context.fill();
+        context.restore();
     }
 }
