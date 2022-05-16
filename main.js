@@ -1,22 +1,23 @@
-const canvas = document.getElementById('myCanvas');
-canvas.height = window.innerHeight;
-canvas.width = 200;
+const canvas=document.getElementById("myCanvas");
+canvas.width=200;
 
-const context = canvas.getContext("2d");
-const road = new Road(canvas.width/2, canvas.width*0.9);
-const car = new Car(road.getLaneCenter(3), 100, 30, 50);
-car.draw(context);
+const ctx = canvas.getContext("2d");
+const road=new Road(canvas.width/2,canvas.width*0.9);
+const car=new Car(road.getLaneCenter(1),100,30,50);
 
-AnimationEffect();
+animate();
 
-function AnimationEffect(){
-    car.update();
-    canvas.height = window.innerHeight;
+function animate(){
+    car.update(road.borders);
 
-    context.save();
-    context.translate(0, -car.y + canvas.height*.7);
-    road.draw(context);
-    car.draw(context);
-    context.restore();
-    requestAnimationFrame(AnimationEffect);
+    canvas.height=window.innerHeight;
+
+    ctx.save();
+    ctx.translate(0,-car.y+canvas.height*0.7);
+
+    road.draw(ctx);
+    car.draw(ctx);
+
+    ctx.restore();
+    requestAnimationFrame(animate);
 }
